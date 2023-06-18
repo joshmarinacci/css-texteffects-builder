@@ -1,16 +1,18 @@
 import {
     ZodArray,
     ZodBoolean,
-    ZodDefault,
     ZodEffects,
     ZodEnum,
     ZodNumber,
     ZodObject,
     ZodString
 } from "zod";
-import React, {useState, ChangeEvent} from "react";
+import React, {useState, ChangeEvent, useContext} from "react";
 import {HBox} from "./common";
-import {StyleSchema} from "./model";
+import {SketchPicker} from 'react-color';
+import {HSLColor, objToHsla} from "./model";
+import {PopupContext} from "josh_react_util"
+
 
 function NumberInput<T extends ZodNumber>(props: {
     schema: T,
@@ -126,6 +128,25 @@ function ArrayInput<T extends ZodArray<any>>(props: {
     </ul>
 }
 
+function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HTMLButtonElement>)=>void}) {
+    return <button
+        className={'color-swatch-button'}
+        style={{backgroundColor:objToHsla(props.color)}}
+        onClick={props.onClick}
+    >&nbsp;</button>
+}
+function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
+    const pc = useContext(PopupContext)
+    return <ColorSwatchButton color={props.value}
+                              onClick={(e)=>{
+        pc.show_at(<SketchPicker color={props.value} onChange={(e)=>{
+            props.onChange(e.hsl as HSLColor)
+        }}></SketchPicker>,e.target)
+    }
+    }
+    />
+}
+
 function ObjectInput<T extends ZodObject<any>>(props: {
     schema: T,
     name: string,
@@ -140,6 +161,14 @@ function ObjectInput<T extends ZodObject<any>>(props: {
     }
     return <div>
         {Object.entries(props.schema.shape).map(([k, v]) => {
+            //@ts-ignore
+            if(v.description && v.description === 'hsl-color') {
+                return <HBox key={k}>
+                    <label>{k}</label>
+                    <HSLColorInput value={props.object[k]} onChange={(v) => update_object_property(k,v)} />
+                    {/*<label>{props.object[k]}</label>*/}
+                </HBox>
+            }
             if (v instanceof ZodNumber) {
                 return <HBox key={k}>
                     <label>{k}</label>
