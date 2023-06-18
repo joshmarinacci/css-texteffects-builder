@@ -1,6 +1,16 @@
-import {ZodArray, ZodEffects, ZodEnum, ZodNumber, ZodObject, ZodString} from "zod";
+import {
+    ZodArray,
+    ZodBoolean,
+    ZodDefault,
+    ZodEffects,
+    ZodEnum,
+    ZodNumber,
+    ZodObject,
+    ZodString
+} from "zod";
 import React, {useState, ChangeEvent} from "react";
 import {HBox} from "./common";
+import {StyleSchema} from "./model";
 
 function NumberInput<T extends ZodNumber>(props: {
     schema: T,
@@ -66,6 +76,19 @@ function EnumInput<T extends ZodEnum<any>>(props: {
     </div>
 }
 
+function BooleanInput<T extends ZodBoolean>(props: {
+    onChange: (v: any) => void,
+    name: string,
+    value: any,
+}) {
+    return <div>
+        <input type={'checkbox'} checked={props.value} onChange={
+            (e) => {
+            props.onChange(e.target.checked)
+        }}/>
+    </div>
+}
+
 function ArrayInput<T extends ZodArray<any>>(props: {
     schema: T,
     onChange: (v: any[]) => void,
@@ -117,7 +140,6 @@ function ObjectInput<T extends ZodObject<any>>(props: {
     }
     return <div>
         {Object.entries(props.schema.shape).map(([k, v]) => {
-            // console.log("child is",k,props.object[k],v)
             if (v instanceof ZodNumber) {
                 return <HBox key={k}>
                     <label>{k}</label>
@@ -187,6 +209,25 @@ function ObjectInput<T extends ZodObject<any>>(props: {
                         onChange={(v) => update_object_property(k, v)}
                     />
                 </HBox>
+            }
+            // console.log("child is",k,props.object[k],'schema',v)
+            //@ts-ignore
+            // console.log("foo", v._def)
+            //@ts-ignore
+            let def = v._def
+            if(def.typeName === 'ZodDefault') {
+                //@ts-ignore
+                let def2 = def.innerType._def
+                // console.log("inner type is",def2.typeName)
+                if(def2.typeName) {
+                    return <HBox key={k}>
+                        <label>{k}</label>
+                        <BooleanInput name={k}
+                                      onChange={(v)=>update_object_property(k,v)}
+                                      value={props.object[k]}
+                        />
+                    </HBox>
+                }
             }
             return <div key={k}>child prop {k}</div>
         })}

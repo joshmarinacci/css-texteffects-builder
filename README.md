@@ -4,6 +4,14 @@ This is the source to a CSS text effects builder at
 
 https://apps.josh.earth/cssbuilder/
 
+text properties
+
+* base font
+* font size
+* font weight
+* text color
+* text outline width and color
+* text shadow width and color and angle and blur
 
 * react app, client side state only
 * type in the sample text, choose the color, font, size, weight, shadows, etc.
