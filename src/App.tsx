@@ -1,9 +1,9 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import {GOOGLE_FONTS, HSLColor, objToHsla, Style, StyleSchema} from "./model";
 import {useHistoryDoc} from "./schema";
 import {AutoForm} from "./autoform";
-import {PopupContainer, TabbedPanel} from "josh_react_util";
+import {HBox, PopupContainer, TabbedPanel} from "josh_react_util";
 
 const default_style:Style = {
   fontSize: 20,
@@ -141,6 +141,20 @@ function CSSExportView(props: { style: Style }) {
   return <textarea className={'css-export-view'} readOnly={true} value={str} rows={10}/>
 }
 
+function PNGExportView(props: { style: Style }) {
+  const [text, setText] = useState('ABC123')
+  return <div>
+    <HBox>
+      <label>characters</label>
+      <input type={'text'}
+             value={text}
+             onChange={(e) => setText(e.target.value)}/>
+    </HBox>
+    <StyleView style={props.style}/>
+    <button>export</button>
+  </div>
+}
+
 function App() {
   const [style, setStyle] = useHistoryDoc<Style>(StyleSchema, default_style)
   useEffect(() => {
@@ -165,26 +179,24 @@ function App() {
   return <div className={'main'}>
     <div className={'vbox'}>
       <div className={'hbox'}>
-    {/*<h1>Style a Text </h1>*/}
-    <div className={'vbox'}>
-      {Array.from(PRESETS.keys()).map(key => {
-        return <button className={'preset'} key={key} onClick={()=>setStyle(PRESETS.get(key) as Style)}>{key}</button>
-      })}
-    </div>
-    <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
-    <StyleView style={style}/>
+        {/*<h1>Style a Text </h1>*/}
+        <div className={'vbox'}>
+          {Array.from(PRESETS.keys()).map(key => {
+            return <button className={'preset'} key={key} onClick={()=>setStyle(PRESETS.get(key) as Style)}>{key}</button>
+          })}
+        </div>
+        <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
+        <StyleView style={style}/>
       </div>
       <h3>Export</h3>
       <TabbedPanel titles={['css','png','js']}>
         <CSSExportView style={style}/>
-        <button>
-          hi
-        </button>
+        <PNGExportView style={style}/>
         <button>ho</button>
       </TabbedPanel>
     </div>
     {/*<div className={'text'}>hello</div>*/}
-      <PopupContainer/>
+    <PopupContainer/>
   </div>
 }
 
