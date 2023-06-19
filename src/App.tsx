@@ -3,7 +3,7 @@ import './App.css';
 import {GOOGLE_FONTS, HSLColor, objToHsla, Style, StyleSchema} from "./model";
 import {useHistoryDoc} from "./schema";
 import {AutoForm} from "./autoform";
-import {PopupContainer} from "josh_react_util";
+import {PopupContainer, TabbedPanel} from "josh_react_util";
 
 const default_style:Style = {
   fontSize: 20,
@@ -138,7 +138,7 @@ function CSSExportView(props: { style: Style }) {
     str += `${CSS_PROP_NAMES[propName]}: ${value};
 `
   })
-  return <textarea readOnly={true} value={str} rows={10}/>
+  return <textarea className={'css-export-view'} readOnly={true} value={str} rows={10}/>
 }
 
 function App() {
@@ -174,7 +174,14 @@ function App() {
     <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
     <StyleView style={style}/>
       </div>
-    <CSSExportView style={style}/>
+      <h3>Export</h3>
+      <TabbedPanel titles={['css','png','js']}>
+        <CSSExportView style={style}/>
+        <button>
+          hi
+        </button>
+        <button>ho</button>
+      </TabbedPanel>
     </div>
     {/*<div className={'text'}>hello</div>*/}
       <PopupContainer/>

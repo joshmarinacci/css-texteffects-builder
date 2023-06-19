@@ -71,3 +71,10 @@ button.preset {
   width: 32px;
   height: 32px;
 }
+
+
+.css-export-view {
+  width: 100%;
+  margin:0;
+  box-sizing: border-box;
+}
