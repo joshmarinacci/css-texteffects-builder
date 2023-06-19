@@ -98,7 +98,7 @@ function StyleView(props: { style: Style }) {
 }
 
 const PRESETS = new Map<string,Style>()
-PRESETS.set('hotdog',{
+PRESETS.set('Hotdog',{
   sample:'hotdog',
   fontSize: 150,
   fontFamily: 'sans-serif',
@@ -122,7 +122,7 @@ PRESETS.set('hotdog',{
   shadowGradientSteps:2,
   shadowEndColor: { h: 0, s: 1, l:1, a:1},
 })
-PRESETS.set('green neon',{
+PRESETS.set('Green Neon',{
   sample:'neon',
   fontSize: 150,
   fontFamily: 'sans-serif',
@@ -144,7 +144,7 @@ PRESETS.set('green neon',{
 const WHITE:HSLColor = {
   h:0, s:0, l:1, a:1
 }
-PRESETS.set('only shadows', {
+PRESETS.set('only shadow', {
   sample:'SHADOWS',
   fontSize: 127,
   fontFamily: 'sans-serif',
@@ -163,31 +163,30 @@ PRESETS.set('only shadows', {
   shadowGradientSteps:2,
   shadowEndColor: { h: 0, s: 1, l:1, a:1},
 })
-PRESETS.set('fire text', {
+PRESETS.set('Fire', {
   sample: "Fire",
   fontSize: 216,
-  fontFamily: "system-ui",
+  fontFamily: "Orbitron",
   fontWeight: "bold",
-  color: { h:0.5, s:0, l:1, a:1 },
+  color: { h:52, s:0, l:0, a:1 },
   backgroundColor: { h:3.9418562068495633, s:0, l:0, a:1 },
-  strokeEnabled: false,
+  strokeEnabled: true,
   strokeWidth: 3,
-  strokeColor: {h: 52,s:0.01,l:0.81,a:1.0},
+  strokeColor: { h:52.000000000000234, s:0, l:0, a:1 },
   shadowEnabled: true,
   shadowOffsetX: 6.5,
-  shadowOffsetY: 30,
-  shadowBlurRadius: 0,
+  shadowOffsetY: -100,
+  shadowBlurRadius: 68.8,
   shadowColor: { h:63.627894201944045, s:1, l:0.5, a:1 },
   shadowGradientEnabled: true,
-  shadowGradientSteps: 5,
-  shadowEndColor: { h:0, s:1, l:0.5, a:1 }
-})
+  shadowGradientSteps: 25,
+  shadowEndColor: { h:0, s:1, l:0.5, a:1 }})
 PRESETS.set('70s fade',{
   sample: "12:57",
   fontSize: 204,
   fontFamily: "sans-serif",
   fontWeight: "bold",
-  color: { h:52, s:0, l:0, a:1 },
+  color: { h:19.604655421057412, s:0.9796055596823229, l:0.5439933699999999, a:1 },
   backgroundColor: { h:52.00000000000024, s:1, l:0.94965, a:1 },
   strokeEnabled: false,
   strokeWidth: 0.5,
@@ -199,7 +198,43 @@ PRESETS.set('70s fade',{
   shadowColor: { h:52.00000000000001, s:1, l:0.97585, a:1 },
   shadowGradientEnabled: true,
   shadowGradientSteps: 100,
-  shadowEndColor: { h:14.930228299872814, s:1, l:0.4987, a:1 }
+  shadowEndColor: { h:14.930228299872814, s:1, l:0.4987, a:1 }})
+PRESETS.set('black geometric',{
+  sample: "12:57",
+  fontSize: 204,
+  fontFamily: "sans-serif",
+  fontWeight: "bold",
+  color: { h:52, s:0, l:0, a:1 },
+  backgroundColor: { h:153.59301899754726, s:1, l:0.8915000000000001, a:1 },
+  strokeEnabled: true,
+  strokeWidth: 1.4,
+  strokeColor: { h:52.00000000000003, s:0, l:1, a:1 },
+  shadowEnabled: true,
+  shadowOffsetX: 2,
+  shadowOffsetY: 15,
+  shadowBlurRadius: 0,
+  shadowColor: { h:52.000000000000234, s:0, l:0, a:1 },
+  shadowGradientEnabled: true,
+  shadowGradientSteps: 27,
+  shadowEndColor: { h:14.930228299873056, s:0.02030405060708103, l:0.09546173999999999, a:1 }})
+PRESETS.set('doop',{
+  sample: "doop",
+  fontSize: 137,
+  fontFamily: "Josefin Sans",
+  fontWeight: "600",
+  color: { h:138.59304028888081, s:0, l:0, a:1 },
+  backgroundColor: { h:352.71844660194176, s:0.980952380952381, l:0.4117647058823529, a:1 },
+  strokeEnabled: false,
+  strokeWidth: 0.8,
+  strokeColor: { h:52.000000000000234, s:1, l:0.5, a:1 },
+  shadowEnabled: true,
+  shadowOffsetX: 0,
+  shadowOffsetY: 100,
+  shadowBlurRadius: 0,
+  shadowColor: { h:55.36363636363636, s:0.9401709401709404, l:0.5411764705882353, a:1 },
+  shadowGradientEnabled: true,
+  shadowGradientSteps: 22,
+  shadowEndColor: { h:37.42857142857143, s:0.9130434782608696, l:0.5490196078431373, a:1 }
 })
 const CSS_PROP_NAMES = {
   'fontFamily':'font-family',
@@ -280,7 +315,7 @@ function App() {
     <VBox>
       <h1>Style a Text </h1>
       <HBox>
-        <div className={'vbox'}>
+        <div className={'vbox presets'}>
           {Array.from(PRESETS.keys()).map(key => {
             return <button className={'preset'} key={key} onClick={()=>setStyle(PRESETS.get(key) as Style)}>{key}</button>
           })}

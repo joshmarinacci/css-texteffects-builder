@@ -5,6 +5,14 @@
 
 button.preset {
   white-space: nowrap;
+  text-transform: capitalize;
+  padding: 0.5rem;
+  background-color: #ffffff;
+  margin: 0.25rem;
+  border: 1px solid black;
+}
+button.preset:hover {
+  background-color: #b9fda9;
 }
 
 .style-output-wrapper {
@@ -12,7 +20,9 @@ button.preset {
   background-color: white;
   padding: 1rem;
   box-sizing: border-box;
-  width: fit-content;
+  /*width: fit-content;*/
+  width: 100%;
+  overflow: scroll;
 }
 
 .style-output-wrapper span {
@@ -28,12 +38,15 @@ button.preset {
   border-radius: 1rem;
   margin: 1rem;
   width: fit-content;
+  font-family: -apple-system, system-ui, sans-serif;
+  font-size: 11pt;
 }
 
 .auto-form .hbox {
-  padding: 1rem;
+  padding: 0.25rem;
   display: flex;
   flex-direction: row;
+  align-items: center;
 }
 
 .auto-form .hbox label {
