@@ -84,17 +84,32 @@ export const StyleSchema = z.object({
 
     strokeEnabled:z.boolean().default(false),
     strokeWidth:z.number().min(0).max(20),
+    strokeColor:z.object({
+        h:z.number(),
+        s:z.number(),
+        l:z.number(),
+        a:z.number(),
+    }).describe('hsl-color'),
 
     shadowEnabled:z.boolean().default(true),
-    shadowOffsetX:z.number().min(-30).max(30),
-    shadowOffsetY:z.number().min(-30).max(30),
-    shadowBlurRadius:z.number().min(0).max(20),
+    shadowOffsetX:z.number().min(-100).max(100).int(),
+    shadowOffsetY:z.number().min(-100).max(100).int(),
+    shadowBlurRadius:z.number().min(0).max(100),
     shadowColor:z.object({
         h:z.number(),
         s:z.number(),
         l:z.number(),
         a:z.number(),
     }).describe('hsl-color'),
+
+    shadowGradientEnabled:z.boolean().default(false),
+    shadowGradientSteps:z.number().min(2).max(100).int(),
+    shadowEndColor:z.object({
+    h:z.number(),
+    s:z.number(),
+    l:z.number(),
+    a:z.number(),
+}).describe('hsl-color'),
 
 })
 export type Style = z.infer<typeof StyleSchema>;
