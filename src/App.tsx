@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import './App.css';
-import {HSLColor, objToHsla, Style, StyleSchema} from "./model";
+import {GOOGLE_FONTS, HSLColor, objToHsla, Style, StyleSchema} from "./model";
 import {useHistoryDoc} from "./schema";
 import {AutoForm} from "./autoform";
 import {PopupContainer} from "josh_react_util";
@@ -114,6 +114,25 @@ PRESETS.set('only shadows', {
 
 function App() {
   const [style, setStyle] = useHistoryDoc<Style>(StyleSchema, default_style)
+  useEffect(() => {
+    const links = document.querySelectorAll('link')
+    const linkmap = new Map<string,HTMLLinkElement>()
+    links.forEach(link => {
+      if(link.hasAttribute('href')) {
+        linkmap.set(link.getAttribute('href') as string, link)
+      }
+    })
+    GOOGLE_FONTS.forEach(fnt => {
+      const url = fnt.url
+      if(!linkmap.has(url)) {
+        const link = document.createElement('link')
+        link.setAttribute('rel','stylesheet')
+        link.setAttribute('href',url)
+        document.head.appendChild(link)
+        console.log("loading link",url)
+      }
+    })
+  },[])
   return <div className={'main'}>
     {/*<h1>Style a Text </h1>*/}
     <div className={'vbox'}>

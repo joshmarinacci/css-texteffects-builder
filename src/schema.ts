@@ -10,7 +10,7 @@ export function start_doc<T>(schema: ZodSchema, backup: object): T {
             q = q.substring(6)
             let json = decodeURIComponent(q)
             let data = schema.parse(JSON.parse(json))
-            console.log("got data from url", data)
+            // console.log("got data from url", data)
             return data
         }
     } catch (e) {
