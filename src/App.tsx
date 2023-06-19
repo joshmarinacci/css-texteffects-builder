@@ -37,8 +37,8 @@ const default_style:Style = {
   }
 }
 
-function StyleView(props: { style: Style }) {
-  const s = props.style
+
+function generateCSSStyle(s: Style):Record<string,string> {
   const style:any = {
     fontSize:`${s.fontSize}px`,
     fontWeight: s.fontWeight,
@@ -52,6 +52,11 @@ function StyleView(props: { style: Style }) {
   }
   style.color = objToHsla(s.color)
   style.backgroundColor = objToHsla(s.backgroundColor)
+  return style
+}
+
+function StyleView(props: { style: Style }) {
+  const style = generateCSSStyle(props.style)
   return <div className={'style-output-wrapper'}>
     <span style={style}>{props.style.sample}</span>
   </div>
@@ -112,6 +117,30 @@ PRESETS.set('only shadows', {
   shadowColor: {h: 52,s:0.01,l:0.81,a:1.0},
 })
 
+const CSS_PROP_NAMES = {
+  'fontFamily':'font-family',
+  'backgroundColor':'background-color',
+  'color':'color',
+  'fontSize':'font-size',
+  'fontWeight':'font-weight',
+  'textShadow':'text-shadow',
+}
+function CSSExportView(props: { style: Style }) {
+  let style = generateCSSStyle(props.style)
+  let str = ""
+  Object.keys(style).forEach(propName => {
+    // @ts-ignore
+    if(!CSS_PROP_NAMES[propName]) {
+      console.log("MISSING name",propName)
+    }
+    const value = style[propName]
+    // @ts-ignore
+    str += `${CSS_PROP_NAMES[propName]}: ${value};
+`
+  })
+  return <textarea readOnly={true} value={str} rows={10}/>
+}
+
 function App() {
   const [style, setStyle] = useHistoryDoc<Style>(StyleSchema, default_style)
   useEffect(() => {
@@ -134,6 +163,8 @@ function App() {
     })
   },[])
   return <div className={'main'}>
+    <div className={'vbox'}>
+      <div className={'hbox'}>
     {/*<h1>Style a Text </h1>*/}
     <div className={'vbox'}>
       {Array.from(PRESETS.keys()).map(key => {
@@ -142,6 +173,9 @@ function App() {
     </div>
     <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
     <StyleView style={style}/>
+      </div>
+    <CSSExportView style={style}/>
+    </div>
     {/*<div className={'text'}>hello</div>*/}
       <PopupContainer/>
   </div>
