@@ -129,11 +129,14 @@ function ArrayInput<T extends ZodArray<any>>(props: {
 }
 
 function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HTMLButtonElement>)=>void}) {
-    return <button
+    return <div className={'color-swatch-button'}>
+        <button
         className={'color-swatch-button'}
         style={{backgroundColor:objToHsla(props.color)}}
         onClick={props.onClick}
     >&nbsp;</button>
+        <label>{objToHsla(props.color)}</label>
+    </div>
 }
 function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
     const pc = useContext(PopupContext)

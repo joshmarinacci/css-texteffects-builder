@@ -1,5 +1,15 @@
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+
+button.preset {
+  white-space: nowrap;
+}
+
 .style-output-wrapper {
-  border: 1px solid red;
+  border: 1px solid black;
+  background-color: white;
   padding: 1rem;
   width: fit-content;
   max-width: 800px;
@@ -52,8 +62,10 @@
   flex-direction: row;
 }
 
-
-.color-swatch-button {
+.color-swatch-button label {
+  margin-left: 1rem;
+}
+.color-swatch-button button {
   border: 2px solid white;
   box-shadow: 0px 0px 0px 2px black;
   width: 32px;

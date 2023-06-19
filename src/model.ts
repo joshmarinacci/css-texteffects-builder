@@ -52,5 +52,5 @@ export type HSLColor = {
 }
 
 export function objToHsla(c: HSLColor): string {
-    return `hsla(${Math.floor(c.h)},${c.s * 100}%,${c.l * 100}%,${c.a})`
+    return `hsla(${Math.floor(c.h)},${Math.floor(c.s * 100)}%,${Math.floor(c.l * 100)}%,${c.a})`
 }

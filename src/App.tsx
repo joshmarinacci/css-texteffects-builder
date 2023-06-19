@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import {objToHsla, Style, StyleSchema} from "./model";
+import {HSLColor, objToHsla, Style, StyleSchema} from "./model";
 import {useHistoryDoc} from "./schema";
 import {AutoForm} from "./autoform";
 import {PopupContainer} from "josh_react_util";
@@ -57,10 +57,70 @@ function StyleView(props: { style: Style }) {
   </div>
 }
 
+const PRESETS = new Map<string,Style>()
+PRESETS.set('hotdog',{
+  sample:'hotdog',
+  fontSize: 150,
+  fontFamily: 'sans-serif',
+  color: {
+    h: 16,
+    s: 1.0,
+    l: 0.5,
+    a: 1.0,
+  },
+  strokeEnabled: false,
+  shadowEnabled: true,
+  shadowOffsetX: 5,
+  shadowOffsetY: 5,
+  shadowBlurRadius: 0,
+  backgroundColor: { h: 0, s: 1, l:1, a:1},
+  shadowColor: { h: 53, s: 0.95, l:0.7, a:1},
+  fontWeight: 'bold',
+  strokeWidth: 0,
+})
+PRESETS.set('neon-green',{
+  sample:'neon green',
+  fontSize: 150,
+  fontFamily: 'sans-serif',
+  fontWeight: '100',
+  color: { h:117, s:0.38,l:0.44,a:1.0},
+  backgroundColor: { h:117, s:0.0, l:0.0, a:1.0},
+  strokeEnabled: false,
+  strokeWidth: 0,
+  shadowEnabled: true,
+  shadowOffsetX: 0,
+  shadowOffsetY: 5,
+  shadowBlurRadius: 20,
+  shadowColor: {h: 52,s:0.39,l:0.97,a:1.0},
+})
+const WHITE:HSLColor = {
+  h:0, s:0, l:1, a:1
+}
+PRESETS.set('only shadows', {
+  sample:'SHADOWS',
+  fontSize: 127,
+  fontFamily: 'sans-serif',
+  fontWeight: 'bold',
+  color: WHITE,
+  backgroundColor: WHITE,
+  strokeEnabled: false,
+  strokeWidth: 0,
+  shadowEnabled: true,
+  shadowOffsetX: -16,
+  shadowOffsetY: 0,
+  shadowBlurRadius: 20,
+  shadowColor: {h: 52,s:0.01,l:0.81,a:1.0},
+})
+
 function App() {
   const [style, setStyle] = useHistoryDoc<Style>(StyleSchema, default_style)
   return <div className={'main'}>
     {/*<h1>Style a Text </h1>*/}
+    <div className={'vbox'}>
+      {Array.from(PRESETS.keys()).map(key => {
+        return <button className={'preset'} key={key} onClick={()=>setStyle(PRESETS.get(key) as Style)}>{key}</button>
+      })}
+    </div>
     <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
     <StyleView style={style}/>
     {/*<div className={'text'}>hello</div>*/}
