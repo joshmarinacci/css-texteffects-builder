@@ -13,15 +13,11 @@ button.preset {
   padding: 1rem;
   box-sizing: border-box;
   width: fit-content;
-  max-width: 800px;
 }
 
 .style-output-wrapper span {
-  color: #ff0000;
-  -webkit-text-stroke-color: blue;
-  font-family: system-ui;
   display: block;
-  padding: 4rem;
+  padding: 150px;
 }
 
 
