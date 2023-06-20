@@ -98,3 +98,16 @@ button.preset:hover {
   flex-direction: column;
   width: 600px;
 }
+
+
+
+.color-picker-wrapper {
+  /*border: 1px solid red;*/
+}
+.color-picker-wrapper .popover {
+  border: 0px solid black;
+  position: absolute;
+}
+.color-picker-wrapper .cover {
+  border: 0px solid blue;
+}

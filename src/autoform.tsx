@@ -7,11 +7,10 @@ import {
     ZodObject,
     ZodString
 } from "zod";
-import React, {useState, ChangeEvent, useContext} from "react";
+import React, {useState, ChangeEvent, useContext, CSSProperties} from "react";
 import {HBox} from "./common";
 import {SketchPicker} from 'react-color';
 import {HSLColor, objToHsla} from "./model";
-import {PopupContext} from "josh_react_util"
 
 
 function NumberInput<T extends ZodNumber>(props: {
@@ -139,15 +138,16 @@ function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HT
     </div>
 }
 function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
-    const pc = useContext(PopupContext)
-    return <ColorSwatchButton color={props.value}
-                              onClick={(e)=>{
-        pc.show_at(<SketchPicker color={props.value} onChange={(e)=>{
-            props.onChange(e.hsl as HSLColor)
-        }}></SketchPicker>,e.target)
-    }
-    }
-    />
+    const [visible, setVisible] = useState(true)
+    return <div className={"color-picker-wrapper"}>
+        <ColorSwatchButton color={props.value} onClick={()=>setVisible(!visible)}/>
+        {visible &&  <div className={'popover'}>
+            <div className={'cover'} onClick={()=>setVisible(true)}>
+                <SketchPicker color={props.value}
+                              onChange={(e)=> props.onChange(e.hsl as HSLColor)}/>
+            </div>
+        </div>}
+    </div>
 }
 
 function ObjectInput<T extends ZodObject<any>>(props: {
