@@ -84,7 +84,7 @@ export const StyleSchema = z.object({
     }).describe('hsl-color'),
 
     strokeEnabled:z.boolean().default(false),
-    strokeWidth:z.number().min(0).max(20),
+    strokeWidth:z.number().min(0).max(10),
     strokeColor:z.object({
         h:z.number(),
         s:z.number(),
@@ -124,6 +124,7 @@ export type HSLColor = {
 }
 
 export function objToHsla(c: HSLColor): string {
+    if(!c) return 'magenta'
     return `hsla(${Math.floor(c.h)},${Math.floor(c.s * 100)}%,${Math.floor(c.l * 100)}%,${c.a})`
 }
 
@@ -145,26 +146,38 @@ export function generateCSSStyle(s: Style): Record<string, string> {
     }
     style.color = objToHsla(s.color)
     style.backgroundColor = objToHsla(s.backgroundColor)
+    const shadows:string[] = []
     if (s.strokeEnabled) {
-        style['-webkit-text-stroke-width'] = `${s.strokeWidth}px`;
-        style['-webkit-text-stroke-color'] = `${objToHsla(s.strokeColor)}`;
-    }
-    if (s.shadowEnabled) {
-        style.textShadow = `${s.shadowOffsetX}px ${s.shadowOffsetY}px ${s.shadowBlurRadius}px ${objToHsla(s.shadowColor)}`;
-    }
-    if (s.shadowGradientEnabled) {
-        let txx: string[] = []
-        for (let i = 0; i < s.shadowGradientSteps + 1; i++) {
-            let t = i / s.shadowGradientSteps;
-            let color = lerpHSL(t, s.shadowColor, s.shadowEndColor)
-            let x_off = lerp_number(t, 0, s.shadowOffsetX)
-            let y_off = lerp_number(t, 0, s.shadowOffsetY)
-            let blur = lerp_number(t, 0, s.shadowBlurRadius)
-            let tf = ` ${x_off}px ${y_off}px ${blur}px ${objToHsla(color)}`
-            txx.push(tf)
+        let r = s.strokeWidth
+        let steps = 8.0
+        for(let i=0; i<steps; i++) {
+            let theta = i*(Math.PI*2/steps)
+            let x = r * Math.cos(theta)
+            let y = r * Math.sin(theta)
+            shadows.push(`${x.toFixed(2)}px ${y.toFixed(2)}px 0 ${objToHsla(s.strokeColor)}`);
         }
-        style.textShadow = txx.join(',\n')
+        // shadows.push(` ${r}px -${r}px 0 #000`);
+        // shadows.push(`-${r}px  ${r}px 0 #000`);
+        // shadows.push(` ${r}px  ${r}px 0 #000`);
     }
+
+    if (s.shadowEnabled) {
+        if (s.shadowGradientEnabled) {
+            for (let i = 0; i < s.shadowGradientSteps + 1; i++) {
+                let t = i / s.shadowGradientSteps;
+                let color = lerpHSL(t, s.shadowColor, s.shadowEndColor)
+                let x_off = lerp_number(t, 0, s.shadowOffsetX)
+                let y_off = lerp_number(t, 0, s.shadowOffsetY)
+                let blur = lerp_number(t, 0, s.shadowBlurRadius)
+                let tf = ` ${x_off}px ${y_off}px ${blur}px ${objToHsla(color)}`
+                shadows.push(tf)
+            }
+        } else {
+            shadows.push(`${s.shadowOffsetX}px ${s.shadowOffsetY}px ${s.shadowBlurRadius}px ${objToHsla(s.shadowColor)}`)
+        }
+    }
+    style.textShadow = shadows.join(',\n    ')
+    style.paintOrder = 'stroke fill'
     return style
 }
 

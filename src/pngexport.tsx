@@ -15,6 +15,22 @@ function drawStyleToContext(style: Style, text: string, ctx: CanvasRenderingCont
     ctx.font = font
     ctx.textAlign = 'start'
 
+    if(style.strokeEnabled) {
+        let r = style.strokeWidth
+        let steps = 8.0
+        for(let i=0; i<steps; i++) {
+            let theta = i*(Math.PI*2/steps)
+            let x_off = r * Math.cos(theta)
+            let y_off = r * Math.sin(theta)
+            ctx.shadowOffsetX = x_off - bounds.w
+            ctx.shadowOffsetY = y_off
+            ctx.shadowBlur = 0
+            ctx.shadowColor = objToHsla(style.strokeColor)
+            ctx.fillStyle = 'red'
+            ctx.fillText(text,c.x+bounds.w,c.y+0)
+            ctx.shadowColor = 'transparent'
+        }
+    }
     if(style.shadowEnabled) {
         if (style.shadowGradientEnabled) {
             for (let i = style.shadowGradientSteps; i>=0; i--) {
