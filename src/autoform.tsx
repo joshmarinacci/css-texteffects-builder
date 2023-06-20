@@ -7,10 +7,19 @@ import {
     ZodObject,
     ZodString
 } from "zod";
-import React, {useState, ChangeEvent, useContext, CSSProperties} from "react";
+import React, {useState, ChangeEvent, useContext, CSSProperties, ComponentProps} from "react";
 import {HBox} from "./common";
-import {SketchPicker} from 'react-color';
+import {
+    BlockPicker,
+    ColorResult,
+    CustomPicker,
+    PhotoshopPicker,
+    SketchPicker,
+    SwatchesPicker
+} from 'react-color';
 import {HSLColor, objToHsla} from "./model";
+import {Alpha, EditableInput, Hue, Saturation} from "react-color/lib/components/common";
+import {TabbedPanel, VBox} from "josh_react_util";
 
 
 function NumberInput<T extends ZodNumber>(props: {
@@ -137,14 +146,41 @@ function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HT
         <label>{objToHsla(props.color)}</label>
     </div>
 }
+
+function MetaColorInput(props:{value: HSLColor, onChange:(v:HSLColor) => void, onClose:()=>void}) {
+    return <div style={{
+        position:'relative',
+    }}>
+        <TabbedPanel titles={['swatches','photoshop']}>
+            <SwatchesPicker color={props.value} onChange={(e)=>props.onChange(e.hsl as HSLColor)}/>
+            <PhotoshopPicker
+                color={props.value}
+                onChange={(e)=>props.onChange(e.hsl as HSLColor)}
+                header={''}
+                onAccept={()=>props.onClose()}
+                onCancel={()=>props.onClose()}
+            />
+        </TabbedPanel>
+        <button style={{
+            position:'absolute',
+            top:'0',
+            right:'0',
+        }} onClick={()=>props.onClose()}>x</button>
+        {/*<CHSLPicker color={props.value} onChange={(e:ColorResult)=>props.onChange(e.hsl as HSLColor)}/>*/}
+    </div>
+}
+
 function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
     const [visible, setVisible] = useState(false)
     return <div className={"color-picker-wrapper"}>
         <ColorSwatchButton color={props.value} onClick={()=>setVisible(!visible)}/>
         {visible &&  <div className={'popover'}>
-            <div className={'cover'} onClick={()=>setVisible(false)}>
-                <SketchPicker color={props.value}
-                              onChange={(e)=> props.onChange(e.hsl as HSLColor)}/>
+            <div className={'cover'}
+                 // onClick={()=>setVisible(false)}
+            >
+                <MetaColorInput value={props.value} onChange={props.onChange} onClose={()=>setVisible(false)}/>
+                {/*<SketchPicker color={props.value}*/}
+                {/*              onChange={(e)=> props.onChange(e.hsl as HSLColor)}/>*/}
             </div>
         </div>}
     </div>
