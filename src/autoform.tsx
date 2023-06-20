@@ -138,11 +138,11 @@ function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HT
     </div>
 }
 function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
-    const [visible, setVisible] = useState(true)
+    const [visible, setVisible] = useState(false)
     return <div className={"color-picker-wrapper"}>
         <ColorSwatchButton color={props.value} onClick={()=>setVisible(!visible)}/>
         {visible &&  <div className={'popover'}>
-            <div className={'cover'} onClick={()=>setVisible(true)}>
+            <div className={'cover'} onClick={()=>setVisible(false)}>
                 <SketchPicker color={props.value}
                               onChange={(e)=> props.onChange(e.hsl as HSLColor)}/>
             </div>
