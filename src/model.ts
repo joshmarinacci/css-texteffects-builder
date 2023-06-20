@@ -1,4 +1,5 @@
 import z from "zod";
+import {lerp_number} from "josh_js_util";
 
 export const GOOGLE_FONTS = [
     {
@@ -124,4 +125,87 @@ export type HSLColor = {
 
 export function objToHsla(c: HSLColor): string {
     return `hsla(${Math.floor(c.h)},${Math.floor(c.s * 100)}%,${Math.floor(c.l * 100)}%,${c.a})`
+}
+
+function lerpHSL(t: number, start: HSLColor, end: HSLColor) {
+    let color: HSLColor = {
+        h: lerp_number(t, start.h, end.h),
+        s: lerp_number(t, start.s, end.s),
+        l: lerp_number(t, start.l, end.l),
+        a: lerp_number(t, start.a, end.a),
+    }
+    return color
+}
+
+export function generateCSSStyle(s: Style): Record<string, string> {
+    const style: any = {
+        fontSize: `${s.fontSize}px`,
+        fontWeight: s.fontWeight,
+        fontFamily: s.fontFamily,
+    }
+    style.color = objToHsla(s.color)
+    style.backgroundColor = objToHsla(s.backgroundColor)
+    if (s.strokeEnabled) {
+        style['-webkit-text-stroke-width'] = `${s.strokeWidth}px`;
+        style['-webkit-text-stroke-color'] = `${objToHsla(s.strokeColor)}`;
+    }
+    if (s.shadowEnabled) {
+        style.textShadow = `${s.shadowOffsetX}px ${s.shadowOffsetY}px ${s.shadowBlurRadius}px ${objToHsla(s.shadowColor)}`;
+    }
+    if (s.shadowGradientEnabled) {
+        let txx: string[] = []
+        for (let i = 0; i < s.shadowGradientSteps + 1; i++) {
+            let t = i / s.shadowGradientSteps;
+            let color = lerpHSL(t, s.shadowColor, s.shadowEndColor)
+            let x_off = lerp_number(t, 0, s.shadowOffsetX)
+            let y_off = lerp_number(t, 0, s.shadowOffsetY)
+            let blur = lerp_number(t, 0, s.shadowBlurRadius)
+            let tf = ` ${x_off}px ${y_off}px ${blur}px ${objToHsla(color)}`
+            txx.push(tf)
+        }
+        style.textShadow = txx.join(',\n')
+    }
+    return style
+}
+
+export const default_style: Style = {
+    fontSize: 20,
+    sample: 'abc123',
+    fontFamily: 'system-ui',
+    fontWeight: 'bold',
+    color: {
+        h: 30,
+        s: 1,
+        l: 0.5,
+        a: 1.0,
+    },
+
+    strokeEnabled: false,
+    strokeWidth: 3,
+    strokeColor: {h: 52, s: 0.01, l: 0.81, a: 1.0},
+
+    shadowOffsetX: 3,
+    shadowOffsetY: 3,
+    shadowBlurRadius: 3,
+    shadowEnabled: true,
+    shadowColor: {
+        h: 0,
+        s: 0,
+        l: 0,
+        a: 1.0,
+    },
+    backgroundColor: {
+        h: 0.5,
+        s: 1.0,
+        l: 0.5,
+        a: 1.0,
+    },
+    shadowGradientEnabled: false,
+    shadowGradientSteps: 2,
+    shadowEndColor: {
+        h: 0.5,
+        s: 1.0,
+        l: 0.5,
+        a: 1.0,
+    },
 }
