@@ -2,17 +2,18 @@ import {lerpHSL, objToHsla, Style} from "./model";
 import React, {useEffect, useRef, useState} from "react";
 import {HBox, VBox} from "josh_react_util";
 import {Bounds, lerp_number} from "josh_js_util";
+import {canvas_to_blob, forceDownloadBlob} from "josh_web_util";
 
 function drawStyleToContext(style: Style, text: string, ctx: CanvasRenderingContext2D, bounds: Bounds) {
     ctx.save()
     ctx.fillStyle = objToHsla(style.backgroundColor)
     ctx.fillRect(bounds.x,bounds.y,bounds.w,bounds.h)
 
-    let c = bounds.center()
+    let c = bounds.left_midpoint()
     let font = `${style.fontWeight} ${style.fontSize}px "${style.fontFamily}"`
     console.log('canvas font:',font)
     ctx.font = font
-    ctx.textAlign = 'center'
+    ctx.textAlign = 'start'
 
     if(style.shadowEnabled) {
         if (style.shadowGradientEnabled) {
@@ -57,9 +58,15 @@ export function PNGExportView(props: { style: Style }) {
         if(ref.current) {
             // @ts-ignore
             const ctx = ref.current.getContext('2d')
-            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,600,400))
+            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,1000,400))
         }
     },[props.style,text])
+    const exportCanvas = async () => {
+        if (ref.current) {
+            let blob = await canvas_to_blob(ref.current)
+            forceDownloadBlob('output.png',blob)
+        }
+    }
     return <div className={'png-export-view'}>
         <HBox>
             <label>characters</label>
@@ -68,12 +75,12 @@ export function PNGExportView(props: { style: Style }) {
                    onChange={(e) => setText(e.target.value)}/>
         </HBox>
         <HBox>
-            <button>export</button>
+            <button onClick={exportCanvas}>export</button>
         </HBox>
         <canvas style={{
             border:'1px solid red',
-            width:'300px',
+            width:'500px',
             height:'200px',
-        }} ref={ref} width={600} height={400}></canvas>
+        }} ref={ref} width={1000} height={400}></canvas>
     </div>
 }
