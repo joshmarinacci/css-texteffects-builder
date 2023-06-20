@@ -90,3 +90,11 @@ button.preset:hover {
   margin:0;
   box-sizing: border-box;
 }
+
+
+.png-export-view {
+  border: 1px solid blue;
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+}

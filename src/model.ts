@@ -127,7 +127,7 @@ export function objToHsla(c: HSLColor): string {
     return `hsla(${Math.floor(c.h)},${Math.floor(c.s * 100)}%,${Math.floor(c.l * 100)}%,${c.a})`
 }
 
-function lerpHSL(t: number, start: HSLColor, end: HSLColor) {
+export function lerpHSL(t: number, start: HSLColor, end: HSLColor) {
     let color: HSLColor = {
         h: lerp_number(t, start.h, end.h),
         s: lerp_number(t, start.s, end.s),

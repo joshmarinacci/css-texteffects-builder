@@ -16,7 +16,7 @@ function App() {
   useGoogleFonts()
   return <div className={'main'}>
     <VBox>
-      <h1>Style a Text </h1>
+      <h1>CSS Text Effects Generator </h1>
       <HBox>
         <PresetsList setStyle={setStyle}/>
         <AutoForm object={style} schema={StyleSchema} onChange={setStyle}/>
