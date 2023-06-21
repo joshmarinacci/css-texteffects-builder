@@ -45,6 +45,10 @@ export const GOOGLE_FONTS = [
     {
         name:'Ewert',
         url:'https://fonts.googleapis.com/css2?family=Ewert&display=swap',
+    },
+    {
+        name:'Bungee Shade',
+        url:'https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap',
     }
 
 ]
@@ -68,6 +72,7 @@ export const StyleSchema = z.object({
         'Monoton',
         'Chewy',
         'Ewert',
+        'Bungee Shade',
     ]),
     fontWeight:z.enum(['normal','bold','lighter','bolder','100','200','300','400','500','600','700','800','900']),
     color:z.object({
