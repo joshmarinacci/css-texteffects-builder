@@ -11,7 +11,7 @@ function drawStyleToContext(style: Style, text: string, ctx: CanvasRenderingCont
 
     let c = bounds.left_midpoint()
     let font = `${style.fontWeight} ${style.fontSize}px "${style.fontFamily}"`
-    console.log('canvas font:',font)
+    // console.log('canvas font:',font)
     ctx.font = font
     ctx.textAlign = 'start'
 

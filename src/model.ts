@@ -1,6 +1,12 @@
 import z from "zod";
 import {lerp_number} from "josh_js_util";
 
+export type OverrideSettings = {
+    view:'dropdown',
+    values:any[],
+}
+export type Overrides = Record<string,OverrideSettings>
+
 export const GOOGLE_FONTS = [
     {
         name:'Orbitron',
@@ -57,23 +63,7 @@ export const GOOGLE_FONTS = [
 export const StyleSchema = z.object({
     sample:z.string(),
     fontSize:z.number().min(9).max(256).int(),
-    fontFamily:z.enum([
-        'serif',
-        'sans-serif',
-        'monospace',
-        'cursive',
-        'fantasy',
-        'system-ui',
-        'Orbitron',
-        'Playfair Display',
-        'Space Mono',
-        'Josefin Sans',
-        'Eczar',
-        'Monoton',
-        'Chewy',
-        'Ewert',
-        'Bungee Shade',
-    ]),
+    fontFamily:z.string().nonempty(),
     fontWeight:z.enum(['normal','bold','lighter','bolder','100','200','300','400','500','600','700','800','900']),
     color:z.object({
         h:z.number(),
@@ -147,7 +137,7 @@ export function generateCSSStyle(s: Style): Record<string, string> {
     const style: any = {
         fontSize: `${s.fontSize}px`,
         fontWeight: s.fontWeight,
-        fontFamily: s.fontFamily,
+        fontFamily: `"${s.fontFamily}"`,
     }
     style.color = objToHsla(s.color)
     style.backgroundColor = objToHsla(s.backgroundColor)
@@ -161,9 +151,6 @@ export function generateCSSStyle(s: Style): Record<string, string> {
             let y = r * Math.sin(theta)
             shadows.push(`${x.toFixed(2)}px ${y.toFixed(2)}px 0 ${objToHsla(s.strokeColor)}`);
         }
-        // shadows.push(` ${r}px -${r}px 0 #000`);
-        // shadows.push(`-${r}px  ${r}px 0 #000`);
-        // shadows.push(` ${r}px  ${r}px 0 #000`);
     }
 
     if (s.shadowEnabled) {
@@ -182,7 +169,6 @@ export function generateCSSStyle(s: Style): Record<string, string> {
         }
     }
     style.textShadow = shadows.join(',\n    ')
-    style.paintOrder = 'stroke fill'
     return style
 }
 

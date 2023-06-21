@@ -17,7 +17,7 @@ import {
     SketchPicker,
     SwatchesPicker
 } from 'react-color';
-import {HSLColor, objToHsla} from "./model";
+import {HSLColor, objToHsla, Overrides, OverrideSettings} from "./model";
 import {Alpha, EditableInput, Hue, Saturation} from "react-color/lib/components/common";
 import {TabbedPanel, VBox} from "josh_react_util";
 
@@ -80,6 +80,27 @@ function EnumInput<T extends ZodEnum<any>>(props: {
             {
                 Object.entries(props.schema.enum).map(([k, v]) => {
                     return <option key={k} value={k}>{v}</option>
+                })
+            }
+        </select>
+    </div>
+}
+
+function StringEnum<T extends ZodString>(props:{
+    name:string,
+    value: string,
+    onChange: (v: string) => void,
+    values: string[]
+}) {
+    return <div>
+        <select
+            value={props.value}
+            onChange={(e) => {
+                props.onChange(e.target.value)
+            }}>
+            {
+                props.values.map(k => {
+                    return <option key={k} value={k}>{k}</option>
                 })
             }
         </select>
@@ -190,7 +211,8 @@ function ObjectInput<T extends ZodObject<any>>(props: {
     schema: T,
     name: string,
     onChange: (e: any) => void,
-    object: any
+    object: any,
+    overrides?:Overrides,
 }) {
     const update_object_property = (k: string, v: any) => {
         // console.log("nested update",k,v)
@@ -199,82 +221,96 @@ function ObjectInput<T extends ZodObject<any>>(props: {
         props.onChange(new_obj)
     }
     return <div>
-        {Object.entries(props.schema.shape).map(([k, v]) => {
+        {Object.entries(props.schema.shape).map(([key, v]) => {
             //@ts-ignore
             if(v.description && v.description === 'hsl-color') {
-                return <HBox key={k}>
-                    <label>{k}</label>
-                    <HSLColorInput value={props.object[k]} onChange={(v) => update_object_property(k,v)} />
+                return <HBox key={key}>
+                    <label>{key}</label>
+                    <HSLColorInput value={props.object[key]} onChange={(v) => update_object_property(key,v)} />
                     {/*<label>{props.object[k]}</label>*/}
                 </HBox>
             }
+            if(props.overrides && props.overrides.hasOwnProperty(key)) {
+                const settings:OverrideSettings = props.overrides[key]
+                if(settings.view === 'dropdown') {
+                    return <HBox key={key}>
+                        <label>{key}</label>
+                        <StringEnum
+                            name={key}
+                            value={props.object[key]}
+                            values={settings.values}
+                            onChange={(v) => update_object_property(key, v)}
+                        />
+                    </HBox>
+                }
+            }
             if (v instanceof ZodNumber) {
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <NumberInput range={false}
                                  schema={v}
-                                 name={k}
-                                 value={props.object[k]}
-                                 onChange={(v) => update_object_property(k, v)}
+                                 name={key}
+                                 value={props.object[key]}
+                                 onChange={(v) => update_object_property(key, v)}
                     />
-                    <label>{props.object[k]}</label>
+                    <label>{props.object[key]}</label>
                 </HBox>
             }
             if (v instanceof ZodString) {
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <StringInput
                         schema={v as ZodString}
-                        name={k}
-                        value={props.object[k]}
-                        onChange={(v) => update_object_property(k, v)}
+                        name={key}
+                        value={props.object[key]}
+                        onChange={(v) => update_object_property(key, v)}
                     />
                 </HBox>
             }
             if (v instanceof ZodEnum) {
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <EnumInput
                         schema={v as ZodEnum<any>}
-                        name={k}
-                        value={props.object[k]}
-                        onChange={(v) => update_object_property(k, v)}
+                        name={key}
+                        value={props.object[key]}
+                        onChange={(v) => update_object_property(key, v)}
                     />
                 </HBox>
             }
             if (v instanceof ZodArray) {
                 // console.log("v is array",v)
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <ArrayInput
                         schema={v as ZodArray<any>}
-                        name={k}
-                        value={props.object[k] as any[]}
-                        onChange={(v) => update_object_property(k, v)}
+                        name={key}
+                        value={props.object[key] as any[]}
+                        onChange={(v) => update_object_property(key, v)}
                     />
                 </HBox>
             }
             if (v instanceof ZodObject) {
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <ObjectInput
                         schema={v as ZodObject<any>}
-                        name={k}
-                        object={props.object[k]}
-                        onChange={(v) => update_object_property(k, v)}
+                        name={key}
+                        object={props.object[key]}
+                        onChange={(v) => update_object_property(key, v)}
                     />
                 </HBox>
             }
             if (v instanceof ZodEffects && v._def.schema instanceof ZodObject) {
                 // console.log('is a wrapped object')
-                return <HBox key={k}>
-                    <label>{k}</label>
+                return <HBox key={key}>
+                    <label>{key}</label>
                     <label>effect</label>
                     <ObjectInput
                         schema={v._def.schema as ZodObject<any>}
-                        name={k}
-                        object={props.object[k]}
-                        onChange={(v) => update_object_property(k, v)}
+                        name={key}
+                        object={props.object[key]}
+                        onChange={(v) => update_object_property(key, v)}
                     />
                 </HBox>
             }
@@ -288,28 +324,29 @@ function ObjectInput<T extends ZodObject<any>>(props: {
                 let def2 = def.innerType._def
                 // console.log("inner type is",def2.typeName)
                 if(def2.typeName) {
-                    return <HBox key={k}>
-                        <label>{k}</label>
-                        <BooleanInput name={k}
-                                      onChange={(v)=>update_object_property(k,v)}
-                                      value={props.object[k]}
+                    return <HBox key={key}>
+                        <label>{key}</label>
+                        <BooleanInput name={key}
+                                      onChange={(v)=>update_object_property(key,v)}
+                                      value={props.object[key]}
                         />
                     </HBox>
                 }
             }
-            return <div key={k}>child prop {k}</div>
+            return <div key={key}>child prop {key}</div>
         })}
     </div>
 }
 
 export function AutoForm<T>(props: {
     schema: any,
-    object: any
-    onChange: (v: T) => void
+    object: any,
+    onChange: (v: T) => void,
+    overrides:Overrides,
 }) {
     // console.log("auto form object is",props.schema, props.object)
     return <div className="auto-form">
         <ObjectInput schema={props.schema} name={"self"} onChange={props.onChange}
-                     object={props.object}/>
+                     object={props.object} overrides={props.overrides}/>
     </div>
 }
