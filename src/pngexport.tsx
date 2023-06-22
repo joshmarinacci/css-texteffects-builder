@@ -4,20 +4,18 @@ import {HBox, VBox} from "josh_react_util";
 import {Bounds, lerp_number, Point} from "josh_js_util";
 import {canvas_to_blob, forceDownloadBlob} from "josh_web_util";
 
-function drawStyleToContext(style: Style, fullText: string, ctx: CanvasRenderingContext2D, bounds: Bounds, forExport:boolean) {
-    console.log("font size is",style.fontSize)
-    const size = style.fontSize
+function drawStyleToContext(style: Style, fullText: string, ctx: CanvasRenderingContext2D, bounds: Bounds, forExport:boolean, square:boolean) {
     ctx.save()
     ctx.fillStyle = objToHsla(style.backgroundColor)
     ctx.fillRect(bounds.x,bounds.y,bounds.w,bounds.h)
 
 
-    function drawLetter(letter:string,bds:Bounds) {
+    function drawLetter(letter:string,bds:Bounds, baseline:number) {
         ctx.save()
         let font = `${style.fontWeight} ${style.fontSize}px "${style.fontFamily}"`
-        let pt = bds.bottom_midpoint()
+        let pt = bds.bottom_left()
+        pt.y = baseline
         ctx.font = font
-        ctx.textAlign = 'center'
         if(style.strokeEnabled) {
             let r = style.strokeWidth
             let steps = 8.0
@@ -66,20 +64,38 @@ function drawStyleToContext(style: Style, fullText: string, ctx: CanvasRendering
         ctx.restore()
     }
 
+    ctx.font = `${style.fontWeight} ${style.fontSize}px "${style.fontFamily}"`
+    let met = ctx.measureText(fullText)
+    let maxAscent = met.actualBoundingBoxAscent
+    let height = met.actualBoundingBoxAscent + met.actualBoundingBoxDescent
+    if(style.shadowOffsetY >= 0 && style.shadowEnabled) {
+        height += style.shadowOffsetY
+    }
+
+    let left = 0
     Array.from(fullText).forEach((letter,i) => {
-        // let pt = new Point(0+size*i,80)
-        let bds = new Bounds(0+size*i,size,size,size)
-        bds = bds.add(new Point(0,-size))
-        drawLetter(letter,bds)
+        let size = height
+        let m2 = ctx.measureText(letter)
+        let width = m2.width
+        if(style.shadowEnabled) {
+            width += Math.abs(style.shadowOffsetX)
+        }
+        if(square) {
+            width = height
+        }
+        let bds = new Bounds(left,height,width,height)
+        bds = bds.add(new Point(0,-height))
+        drawLetter(letter,bds,maxAscent)
         if(!forExport) {
             ctx.strokeStyle = 'black'
             ctx.strokeRect(bds.x, bds.y, bds.w, bds.h)
         }
+        left += width + m2.actualBoundingBoxLeft
     })
     if(!forExport) {
         ctx.fillStyle = 'black'
         ctx.font = '30px sans-serif';
-        ctx.fillText(`sprite size ${size}`,20,300-20)
+        ctx.fillText(`sprite height ${height.toFixed(2)}`,20,400-50)
     }
 
     ctx.restore()
@@ -87,22 +103,22 @@ function drawStyleToContext(style: Style, fullText: string, ctx: CanvasRendering
 
 export function PNGExportView(props: { style: Style }) {
     const [text, setText] = useState('ABC123')
+    const [square, setSquare] = useState(false)
     const ref = useRef(null)
-    console.log("rendering style", props.style)
     useEffect(() => {
         if(ref.current) {
             // @ts-ignore
             const ctx = ref.current.getContext('2d')
-            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,1000,500),false)
+            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,1000,500),false,square)
         }
-    },[props.style,text])
+    },[props.style,text,square])
     const exportCanvas = async () => {
         if (ref.current) {
             const canvas = document.createElement('canvas')
             canvas.width = props.style.fontSize * text.length
             canvas.height = props.style.fontSize
             let ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,canvas.width,canvas.height),true)
+            drawStyleToContext(props.style,text,ctx, new Bounds(0,0,canvas.width,canvas.height),true,square)
             let blob = await canvas_to_blob(canvas)
             forceDownloadBlob('output.png',blob)
         }
@@ -115,6 +131,8 @@ export function PNGExportView(props: { style: Style }) {
                    onChange={(e) => setText(e.target.value)}/>
         </HBox>
         <HBox>
+            <label>square</label>
+            <input type={'checkbox'} checked={square} onChange={(e)=>setSquare(e.target.checked)}/>
             <button onClick={exportCanvas}>export</button>
         </HBox>
         <canvas style={{
