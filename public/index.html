@@ -39,5 +39,13 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script type="module">
+      const data = new FormData()
+      data.set('type','pageload')
+      data.set('url',document.location.toString())
+      data.set('referrer',document.referrer)
+      data.set('userAgent',navigator.userAgent)
+      navigator.sendBeacon('https://stats.josh.earth/event',data)
+    </script>
   </body>
 </html>
