@@ -11,7 +11,7 @@
     "@types/react": "^18.2.12",
     "@types/react-dom": "^18.2.5",
     "josh_js_util": "^0.1.39",
-    "josh_react_util": "^1.0.18",
+    "josh_react_util": "^1.0.26",
     "josh_web_util": "0.0.4",
     "react": "^18.2.0",
     "react-color": "^2.19.3",
