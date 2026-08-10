@@ -1,5 +1,16 @@
 # Changes
 
+## 2026-08-10 16:20
+
+Updated Vite, Vitest, and @vitejs/plugin-react to latest versions to fix esbuild vulnerability (GHSA-67mh-4wv8-2f99).
+
+- Bumped `vite` 5 → 8, `vitest` 2 → 4, `@vitejs/plugin-react` 4 → 6
+- Added `"type": "module"` to package.json for Vite 8 ESM compatibility
+- Switched `vite.config.ts` to import from `vitest/config` (fixes TypeScript error for `test` property)
+- Replaced `__dirname` with `import.meta.dirname` in vite.config.ts
+- Pinned `josh_react_util` to `1.0.26` — `TabbedPanel` was removed from exports in newer versions
+- Updated `josh_react_util` alias to `lib/esm/index.js` (v1.0.26's path)
+
 ## 2026-08-08 13:20
 
 Migrated from Create React App (deprecated) to Vite + Vitest.
