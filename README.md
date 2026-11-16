@@ -2,7 +2,7 @@
 
 This is the source to a CSS text effects builder at
 
-https://apps.josh.earth/cssbuilder/
+https://apps.josh.earth/texteffects/
 
 text properties
 
