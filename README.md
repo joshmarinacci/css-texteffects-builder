@@ -29,19 +29,28 @@ npm run build        # type-check and production build into dist/
 
 ### Deploy (pm2)
 
-The production build is static files in `dist/`, served by pm2's built-in static server and
-configured in [`ecosystem.config.cjs`](ecosystem.config.cjs).
+The app is a static site, so no pm2 process runs. [`ecosystem.config.cjs`](ecosystem.config.cjs)
+only defines a pm2 `deploy.production` target: it checks out the repo on the server, then runs
+`npm ci && npm run build`. Point the web server at `<path>/current/dist`, served under
+`/texteffects/` (the base path is set in `vite.config.ts`).
 
 ```sh
-npm run deploy                 # build, then start or reload the pm2 app
-PORT=8080 npm run deploy       # pick a port (default 4173)
-pm2 logs css-texteffects-builder
-pm2 save                       # keep it across reboots (after `pm2 startup`)
+pm2 deploy ecosystem.config.cjs production setup     # first time: clone repo on the server
+pm2 deploy ecosystem.config.cjs production           # every deploy after that
+pm2 deploy ecosystem.config.cjs production revert 1  # roll back one release
 ```
 
-The build uses Vite's default base path `/`. If it is served under a sub-path such as
-`/texteffects/` without the proxy stripping that prefix, set `base: '/texteffects/'` in
-`vite.config.ts`.
+Defaults, each overridable with an environment variable:
+
+| Setting  | Default                               | Variable                   |
+|----------|---------------------------------------|----------------------------|
+| user     | `deployman`                           | `TEXTEFFECTS_DEPLOY_USER`  |
+| host     | `josh.earth`                          | `TEXTEFFECTS_DEPLOY_HOST`  |
+| SSH key  | `../deployman_private.key`            | `TEXTEFFECTS_DEPLOY_KEY`   |
+| ref      | `origin/main`                         | `TEXTEFFECTS_DEPLOY_REF`   |
+| path     | `/projects/css-texteffects-builder`   | `TEXTEFFECTS_DEPLOY_PATH`  |
+
+The server needs Node 22.12 or newer (see `engines` in `package.json`).
 
 Stack: React 19, TypeScript, Vite, Zod (the style schema drives the inspector form), react-color,
 Vitest + React Testing Library. See [changes.md](changes.md) for the change log.

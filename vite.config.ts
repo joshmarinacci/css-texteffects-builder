@@ -4,7 +4,9 @@ import path from 'path'
 
 const dir = import.meta.dirname
 
+// The app is served from https://apps.josh.earth/texteffects/, so every asset URL needs that prefix.
 export default defineConfig({
+  base: '/texteffects/',
   plugins: [react()],
   resolve: {
     alias: {
