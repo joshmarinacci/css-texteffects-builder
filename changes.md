@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-11-22 (later)
+
+- Updated `@joshmarinacci/tooltheme` 0.1.1 → 0.1.2, which fixes switch rows rendering toggle-first.
+- Removed the switch-row workaround from `src/App.css`.
+- Restored the `allowScripts` approval for `fsevents@2.3.3`, removed by mistake in the earlier dependency update (the stale `esbuild@0.21.5` entry stays removed).
+
 ## 2026-11-22
 
 Updated dependencies and restyled the app with @joshmarinacci/tooltheme.
