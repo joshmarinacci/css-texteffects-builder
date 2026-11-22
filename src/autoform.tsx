@@ -1,352 +1,225 @@
-import {
-    ZodArray,
-    ZodBoolean,
-    ZodEffects,
-    ZodEnum,
-    ZodNumber,
-    ZodObject,
-    ZodString
-} from "zod";
-import React, {useState, ChangeEvent, useContext, CSSProperties, ComponentProps} from "react";
-import {HBox} from "./common";
-import {
-    BlockPicker,
-    ColorResult,
-    CustomPicker,
-    PhotoshopPicker,
-    SketchPicker,
-    SwatchesPicker
-} from 'react-color';
-import {HSLColor, objToHsla, Overrides, OverrideSettings} from "./model";
-import {Alpha, EditableInput, Hue, Saturation} from "react-color/lib/components/common";
-import {TabbedPanel, VBox} from "josh_react_util";
+import { ZodBoolean, ZodDefault, ZodEnum, ZodNumber, ZodObject, ZodString, ZodType } from 'zod'
+import { ChangeEvent, useId, useRef, useState } from 'react'
+import { SketchPicker } from 'react-color'
+import { HSLColor, objToHsla, Overrides } from './model'
 
+/** Turns `shadowBlurRadius` into `shadow blur radius`. */
+function humanize(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase()
+}
 
-function NumberInput<T extends ZodNumber>(props: {
-    schema: T,
-    value: number,
-    name: string,
-    onChange: (n: number) => void,
-    range: boolean
+function NumberRow(props: {
+  label: string
+  schema: ZodNumber
+  value: number
+  onChange: (n: number) => void
 }) {
-    let scale = 1
-    if(!props.schema.isInt) {
-        scale = 10
+  const { schema } = props
+  // Ranges only step in integers, so fractional fields are scaled by 10.
+  const scale = schema.isInt ? 1 : 10
+  const update = (e: ChangeEvent<HTMLInputElement>) => {
+    if (schema.isInt) {
+      props.onChange(parseInt(e.target.value))
+    } else {
+      props.onChange(parseFloat(e.target.value) / scale)
     }
-    const update = (e:ChangeEvent<HTMLInputElement>) => {
-        if (props.schema.isInt) {
-            let v = parseInt(e.target.value)
-            props.onChange(v)
-        } else {
-            let v = parseFloat(e.target.value)
-            props.onChange(v/scale)
-        }
-    }
-    return <input
-        // type={props.range?"range":"number"}
-        type={"range"}
-        value={props.value*scale}
-        min={props.schema.minValue !== null ? props.schema.minValue*scale : undefined}
-        max={props.schema.maxValue !== null ? props.schema.maxValue*scale : undefined}
+  }
+  return (
+    <label>
+      <span>{props.label}</span>
+      <input
+        type="range"
+        value={props.value * scale}
+        min={schema.minValue !== null ? schema.minValue * scale : undefined}
+        max={schema.maxValue !== null ? schema.maxValue * scale : undefined}
+        aria-valuetext={String(props.value)}
         onChange={update}
-    />
+      />
+      {/* Visual readout only; the slider announces its value via aria-valuetext. */}
+      <output aria-hidden="true">{props.value}</output>
+    </label>
+  )
 }
 
-function StringInput<T extends ZodString>(props: {
-    schema: T,
-    value: string,
-    name: string,
-    onChange: (n: string) => void,
+function TextRow(props: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <label>
+      <span>{props.label}</span>
+      <input type="text" value={props.value} onChange={(e) => props.onChange(e.target.value)} />
+    </label>
+  )
+}
+
+function SelectRow(props: {
+  label: string
+  value: string
+  options: readonly string[]
+  onChange: (v: string) => void
 }) {
-    return <input
-        type={"text"}
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-    />
+  return (
+    <label>
+      <span>{props.label}</span>
+      <select value={props.value} onChange={(e) => props.onChange(e.target.value)}>
+        {props.options.map((k) => (
+          <option key={k} value={k}>
+            {k}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
-function EnumInput<T extends ZodEnum<any>>(props: {
-    schema: T,
-    onChange: (v: any) => void,
-    name: string,
-    value: any
-}) {
-    return <div>
-        <select
-            value={props.value}
-            onChange={(e) => {
-                props.onChange(e.target.value)
-            }}>
-            {
-                Object.entries(props.schema.enum).map(([k, v]) => {
-                    return <option key={k} value={k}>{v}</option>
-                })
-            }
-        </select>
-    </div>
+function SwitchRow(props: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label>
+      <span>{props.label}</span>
+      <input
+        type="checkbox"
+        role="switch"
+        checked={props.value}
+        onChange={(e) => props.onChange(e.target.checked)}
+      />
+    </label>
+  )
 }
 
-function StringEnum<T extends ZodString>(props:{
-    name:string,
-    value: string,
-    onChange: (v: string) => void,
-    values: string[]
-}) {
-    return <div>
-        <select
-            value={props.value}
-            onChange={(e) => {
-                props.onChange(e.target.value)
-            }}>
-            {
-                props.values.map(k => {
-                    return <option key={k} value={k}>{k}</option>
-                })
-            }
-        </select>
-    </div>
+// react-color draws its own chrome inline; blend it into the inspector.
+const PICKER_STYLES = {
+  default: {
+    picker: {
+      background: 'var(--surface-2)',
+      boxShadow: 'none',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)',
+    },
+  },
 }
 
-function BooleanInput<T extends ZodBoolean>(props: {
-    onChange: (v: any) => void,
-    name: string,
-    value: any,
-}) {
-    return <div>
-        <input type={'checkbox'} checked={props.value} onChange={
-            (e) => {
-            props.onChange(e.target.checked)
-        }}/>
-    </div>
-}
-
-function ArrayInput<T extends ZodArray<any>>(props: {
-    schema: T,
-    onChange: (v: any[]) => void,
-    name: string,
-    value: any[]
-}) {
-    const [txt, set_txt] = useState("")
-    const add = () => {
-        let arr = [...props.value]
-        arr.push(txt)
-        props.onChange(arr)
-        set_txt("")
-    }
-    const nuke = (index: number) => {
-        let arr = props.value.slice()
-        arr.splice(index, 1)
-        props.onChange(arr)
-    }
-    return <ul>
-        {props.value.map((v, i) => {
-            return <li key={i}>{v}
-                <button onClick={() => nuke(i)}>[x]</button>
-            </li>
-        })}
-        <HBox>
-            <input type={"text"} value={txt} onChange={(e) => set_txt(e.target.value)}
-                   onKeyDown={e => {
-                       if (e.code === 'Enter') add()
-                   }
-                   }
-            />
-            <button onClick={add}>add</button>
-        </HBox>
-
-    </ul>
-}
-
-function ColorSwatchButton(props:{color:HSLColor, onClick:(e:React.MouseEvent<HTMLButtonElement>)=>void}) {
-    return <div className={'color-swatch-button'}>
+function ColorRow(props: { label: string; value: HSLColor; onChange: (v: HSLColor) => void }) {
+  const [open, setOpen] = useState(false)
+  const pickerId = useId()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const css = objToHsla(props.value)
+  return (
+    <>
+      <label>
+        <span>{props.label}</span>
         <button
-        className={'color-swatch-button'}
-        style={{backgroundColor:objToHsla(props.color)}}
-        onClick={props.onClick}
-    >&nbsp;</button>
-        <label>{objToHsla(props.color)}</label>
-    </div>
+          ref={buttonRef}
+          type="button"
+          className="color-button"
+          aria-expanded={open}
+          aria-controls={pickerId}
+          onClick={() => setOpen(!open)}
+        >
+          <span className="swatch" style={{ backgroundColor: css }} />
+          {css}
+        </button>
+      </label>
+      {open && (
+        <div
+          id={pickerId}
+          className="color-picker"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setOpen(false)
+              // The picker unmounts, so hand focus back to its toggle.
+              buttonRef.current?.focus()
+            }
+          }}
+        >
+          <SketchPicker
+            color={props.value}
+            width="calc(100% - 20px)"
+            styles={PICKER_STYLES}
+            onChange={(c) => props.onChange(c.hsl as HSLColor)}
+          />
+        </div>
+      )}
+    </>
+  )
 }
 
-function MetaColorInput(props:{value: HSLColor, onChange:(v:HSLColor) => void, onClose:()=>void}) {
-    return <div style={{
-        position:'relative',
-    }}>
-        <TabbedPanel titles={['swatches','photoshop']}>
-            <SwatchesPicker color={props.value} onChange={(e)=>props.onChange(e.hsl as HSLColor)}/>
-            <PhotoshopPicker
-                color={props.value}
-                onChange={(e)=>props.onChange(e.hsl as HSLColor)}
-                header={''}
-                onAccept={()=>props.onClose()}
-                onCancel={()=>props.onClose()}
-            />
-        </TabbedPanel>
-        <button style={{
-            position:'absolute',
-            top:'0',
-            right:'0',
-        }} onClick={()=>props.onClose()}>x</button>
-        {/*<CHSLPicker color={props.value} onChange={(e:ColorResult)=>props.onChange(e.hsl as HSLColor)}/>*/}
-    </div>
-}
-
-function HSLColorInput(props: { value: HSLColor, onChange: (v:HSLColor) => void  }) {
-    const [visible, setVisible] = useState(false)
-    return <div className={"color-picker-wrapper"}>
-        <ColorSwatchButton color={props.value} onClick={()=>setVisible(!visible)}/>
-        {visible &&  <div className={'popover'}>
-            <div className={'cover'}
-                 // onClick={()=>setVisible(false)}
-            >
-                <MetaColorInput value={props.value} onChange={props.onChange} onClose={()=>setVisible(false)}/>
-                {/*<SketchPicker color={props.value}*/}
-                {/*              onChange={(e)=> props.onChange(e.hsl as HSLColor)}/>*/}
-            </div>
-        </div>}
-    </div>
-}
-
-function ObjectInput<T extends ZodObject<any>>(props: {
-    schema: T,
-    name: string,
-    onChange: (e: any) => void,
-    object: any,
-    overrides?:Overrides,
+function FieldRow(props: {
+  name: string
+  label: string
+  schema: ZodType
+  value: unknown
+  overrides?: Overrides
+  onChange: (v: unknown) => void
 }) {
-    const update_object_property = (k: string, v: any) => {
-        // console.log("nested update",k,v)
-        let new_obj = {...props.object}
-        new_obj[k] = v
-        props.onChange(new_obj)
-    }
-    return <div>
-        {Object.entries(props.schema.shape).map(([key, v]) => {
-            //@ts-ignore
-            if(v.description && v.description === 'hsl-color') {
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <HSLColorInput value={props.object[key]} onChange={(v) => update_object_property(key,v)} />
-                    {/*<label>{props.object[k]}</label>*/}
-                </HBox>
-            }
-            if(props.overrides && props.overrides.hasOwnProperty(key)) {
-                const settings:OverrideSettings = props.overrides[key]
-                if(settings.view === 'dropdown') {
-                    return <HBox key={key}>
-                        <label>{key}</label>
-                        <StringEnum
-                            name={key}
-                            value={props.object[key]}
-                            values={settings.values}
-                            onChange={(v) => update_object_property(key, v)}
-                        />
-                    </HBox>
-                }
-            }
-            if (v instanceof ZodNumber) {
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <NumberInput range={false}
-                                 schema={v}
-                                 name={key}
-                                 value={props.object[key]}
-                                 onChange={(v) => update_object_property(key, v)}
-                    />
-                    <label>{props.object[key]}</label>
-                </HBox>
-            }
-            if (v instanceof ZodString) {
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <StringInput
-                        schema={v as ZodString}
-                        name={key}
-                        value={props.object[key]}
-                        onChange={(v) => update_object_property(key, v)}
-                    />
-                </HBox>
-            }
-            if (v instanceof ZodEnum) {
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <EnumInput
-                        schema={v as ZodEnum<any>}
-                        name={key}
-                        value={props.object[key]}
-                        onChange={(v) => update_object_property(key, v)}
-                    />
-                </HBox>
-            }
-            if (v instanceof ZodArray) {
-                // console.log("v is array",v)
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <ArrayInput
-                        schema={v as ZodArray<any>}
-                        name={key}
-                        value={props.object[key] as any[]}
-                        onChange={(v) => update_object_property(key, v)}
-                    />
-                </HBox>
-            }
-            if (v instanceof ZodObject) {
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <ObjectInput
-                        schema={v as ZodObject<any>}
-                        name={key}
-                        object={props.object[key]}
-                        onChange={(v) => update_object_property(key, v)}
-                    />
-                </HBox>
-            }
-            if (v instanceof ZodEffects && v._def.schema instanceof ZodObject) {
-                // console.log('is a wrapped object')
-                return <HBox key={key}>
-                    <label>{key}</label>
-                    <label>effect</label>
-                    <ObjectInput
-                        schema={v._def.schema as ZodObject<any>}
-                        name={key}
-                        object={props.object[key]}
-                        onChange={(v) => update_object_property(key, v)}
-                    />
-                </HBox>
-            }
-            // console.log("child is",k,props.object[k],'schema',v)
-            //@ts-ignore
-            // console.log("foo", v._def)
-            //@ts-ignore
-            let def = v._def
-            if(def.typeName === 'ZodDefault') {
-                //@ts-ignore
-                let def2 = def.innerType._def
-                // console.log("inner type is",def2.typeName)
-                if(def2.typeName) {
-                    return <HBox key={key}>
-                        <label>{key}</label>
-                        <BooleanInput name={key}
-                                      onChange={(v)=>update_object_property(key,v)}
-                                      value={props.object[key]}
-                        />
-                    </HBox>
-                }
-            }
-            return <div key={key}>child prop {key}</div>
-        })}
-    </div>
+  const { schema, value, label, onChange } = props
+  const override = props.overrides?.[props.name]
+  if (schema instanceof ZodObject && schema.description === 'hsl-color') {
+    return <ColorRow label={label} value={value as HSLColor} onChange={onChange} />
+  }
+  if (override?.view === 'dropdown') {
+    return (
+      <SelectRow
+        label={label}
+        value={String(value)}
+        options={override.values}
+        onChange={onChange}
+      />
+    )
+  }
+  if (schema instanceof ZodNumber) {
+    return <NumberRow label={label} schema={schema} value={value as number} onChange={onChange} />
+  }
+  if (schema instanceof ZodString) {
+    return <TextRow label={label} value={value as string} onChange={onChange} />
+  }
+  if (schema instanceof ZodEnum) {
+    return (
+      <SelectRow
+        label={label}
+        value={String(value)}
+        options={schema.options as string[]}
+        onChange={onChange}
+      />
+    )
+  }
+  if (
+    schema instanceof ZodBoolean ||
+    (schema instanceof ZodDefault && schema.def.innerType instanceof ZodBoolean)
+  ) {
+    return <SwitchRow label={label} value={value as boolean} onChange={onChange} />
+  }
+  return (
+    <p>
+      <small>{label}: unsupported field type</small>
+    </p>
+  )
 }
 
-export function AutoForm<T>(props: {
-    schema: any,
-    object: any,
-    onChange: (v: T) => void,
-    overrides:Overrides,
+/**
+ * Renders one property row per field of a Zod object schema.
+ * `fields` maps schema keys to row labels and sets their order; by default every key is shown.
+ */
+export function AutoForm<T extends object>(props: {
+  schema: ZodObject
+  object: T
+  onChange: (v: T) => void
+  overrides?: Overrides
+  fields?: Record<string, string>
 }) {
-    // console.log("auto form object is",props.schema, props.object)
-    return <div className="auto-form">
-        <ObjectInput schema={props.schema} name={"self"} onChange={props.onChange}
-                     object={props.object} overrides={props.overrides}/>
-    </div>
+  const shape = props.schema.shape
+  const fields = props.fields ?? Object.fromEntries(Object.keys(shape).map((k) => [k, humanize(k)]))
+  const values = props.object as Record<string, unknown>
+  return (
+    <>
+      {Object.entries(fields).map(([key, label]) => (
+        <FieldRow
+          key={key}
+          name={key}
+          label={label}
+          schema={shape[key]}
+          value={values[key]}
+          overrides={props.overrides}
+          onChange={(v) => props.onChange({ ...props.object, [key]: v })}
+        />
+      ))}
+    </>
+  )
 }

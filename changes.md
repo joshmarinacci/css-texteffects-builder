@@ -1,5 +1,26 @@
 # Changes
 
+## 2026-11-22
+
+Updated dependencies and restyled the app with @joshmarinacci/tooltheme.
+
+Dependencies:
+- `react`/`react-dom` 18 → 19, `zod` 3 → 4 (fixes GHSA-mrhx-c7xc-m3w5), `vitest`/`@vitest/coverage-v8` 4 → 5, `jsdom` 24 → 31, `@testing-library/jest-dom` 6 → 8, `@types/node` 20 → 22, plus in-range bumps (vite 8.3.8 fixes its 8.2.x advisories). `npm audit`: 0 vulnerabilities.
+- Removed `josh_react_util` (pinned to React 18; its HBox/VBox/TabbedPanel are replaced by semantic HTML).
+- Added ESLint (flat config, typescript-eslint, react-hooks) and Prettier; added `lint`, `typecheck`, `format` scripts.
+- TypeScript stays on 5.9: typescript-eslint does not support TS 7 yet.
+- Node ≥ 22.12 required (vitest 5, jsdom 31). CI now runs Node 24, lints, and uses `vitest run`.
+
+UI:
+- App shell via tooltheme (`#root[data-shell]`): header, preview + export in `main`, inspector in `aside`, status bar footer. Follows system light/dark.
+- Inspector is grouped into Presets / Text / Stroke / Shadow panels with labelled property rows; booleans are switches.
+- Color fields open an inline react-color SketchPicker (replaces the Swatches/Photoshop popover, which did not fit the inspector). Escape closes it.
+- Export tabs are now `<details>` panels.
+- Sliders announce their real value via `aria-valuetext` (fractional sliders are scaled internally).
+
+Fixes:
+- Restoring state from browser history no longer pushes a new history entry (Back/Forward were broken).
+
 ## 2026-08-10 16:20
 
 Updated Vite, Vitest, and @vitejs/plugin-react to latest versions to fix esbuild vulnerability (GHSA-67mh-4wv8-2f99).

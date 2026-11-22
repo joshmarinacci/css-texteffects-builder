@@ -1,9 +1,10 @@
-import {generateCSSStyle, Style} from "./model";
-import React from "react";
+import { generateCSSStyle, Style } from './model'
 
 export function StyleView(props: { style: Style }) {
-    const style = generateCSSStyle(props.style)
-    return <div className={'style-output-wrapper'}>
-        <span style={style}>{props.style.sample}</span>
+  const style = generateCSSStyle(props.style)
+  return (
+    <div className="style-output-wrapper" style={{ backgroundColor: style.backgroundColor }}>
+      <span style={style}>{props.style.sample}</span>
     </div>
+  )
 }

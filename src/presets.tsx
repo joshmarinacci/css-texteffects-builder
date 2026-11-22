@@ -1,5 +1,4 @@
 import {HSLColor, Style} from "./model";
-import React from "react";
 
 const presets = new Map<string, Style>()
 
@@ -145,12 +144,9 @@ presets.set('doop',{
 export const PRESETS = presets
 
 export function PresetsList(props: { setStyle: (style: Style) => void }) {
-    return <div className={"vbox presets"}>
-        <h3>Presets</h3>
-        {Array.from(PRESETS.keys()).map(key => {
-            return <button className={'preset'} key={key}
-                           onClick={() => props.setStyle(PRESETS.get(key) as Style)}>{key}</button>
-
-        })}
-    </div>;
+    return <div role="group" aria-label="Presets" className="presets">
+        {Array.from(PRESETS.entries()).map(([name, style]) =>
+            <button type="button" key={name} onClick={() => props.setStyle(style)}>{name}</button>
+        )}
+    </div>
 }

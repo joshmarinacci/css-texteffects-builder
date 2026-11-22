@@ -8,7 +8,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      'josh_react_util': path.resolve(dir, 'node_modules/josh_react_util/lib/esm/index.js'),
       'josh_web_util': path.resolve(dir, 'node_modules/josh_web_util/dist/index.js'),
     },
   },
