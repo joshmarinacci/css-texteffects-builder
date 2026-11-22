@@ -27,6 +27,22 @@ npm run format       # Prettier
 npm run build        # type-check and production build into dist/
 ```
 
+### Deploy (pm2)
+
+The production build is static files in `dist/`, served by pm2's built-in static server and
+configured in [`ecosystem.config.cjs`](ecosystem.config.cjs).
+
+```sh
+npm run deploy                 # build, then start or reload the pm2 app
+PORT=8080 npm run deploy       # pick a port (default 4173)
+pm2 logs css-texteffects-builder
+pm2 save                       # keep it across reboots (after `pm2 startup`)
+```
+
+The build uses Vite's default base path `/`. If it is served under a sub-path such as
+`/texteffects/` without the proxy stripping that prefix, set `base: '/texteffects/'` in
+`vite.config.ts`.
+
 Stack: React 19, TypeScript, Vite, Zod (the style schema drives the inspector form), react-color,
 Vitest + React Testing Library. See [changes.md](changes.md) for the change log.
 
