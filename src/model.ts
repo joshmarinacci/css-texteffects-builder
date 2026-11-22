@@ -3,7 +3,7 @@ import {lerp_number} from "josh_js_util";
 
 export type OverrideSettings = {
     view:'dropdown',
-    values:any[],
+    values:string[],
 }
 export type Overrides = Record<string,OverrideSettings>
 
@@ -124,7 +124,7 @@ export function objToHsla(c: HSLColor): string {
 }
 
 export function lerpHSL(t: number, start: HSLColor, end: HSLColor) {
-    let color: HSLColor = {
+    const color: HSLColor = {
         h: lerp_number(t, start.h, end.h),
         s: lerp_number(t, start.s, end.s),
         l: lerp_number(t, start.l, end.l),
@@ -134,7 +134,7 @@ export function lerpHSL(t: number, start: HSLColor, end: HSLColor) {
 }
 
 export function generateCSSStyle(s: Style): Record<string, string> {
-    const style: any = {
+    const style: Record<string, string> = {
         fontSize: `${s.fontSize}px`,
         fontWeight: s.fontWeight,
         fontFamily: `"${s.fontFamily}"`,
@@ -143,12 +143,12 @@ export function generateCSSStyle(s: Style): Record<string, string> {
     style.backgroundColor = objToHsla(s.backgroundColor)
     const shadows:string[] = []
     if (s.strokeEnabled) {
-        let r = s.strokeWidth
-        let steps = 8.0
+        const r = s.strokeWidth
+        const steps = 8.0
         for(let i=0; i<steps; i++) {
-            let theta = i*(Math.PI*2/steps)
-            let x = r * Math.cos(theta)
-            let y = r * Math.sin(theta)
+            const theta = i*(Math.PI*2/steps)
+            const x = r * Math.cos(theta)
+            const y = r * Math.sin(theta)
             shadows.push(`${x.toFixed(2)}px ${y.toFixed(2)}px 0 ${objToHsla(s.strokeColor)}`);
         }
     }
@@ -156,12 +156,12 @@ export function generateCSSStyle(s: Style): Record<string, string> {
     if (s.shadowEnabled) {
         if (s.shadowGradientEnabled) {
             for (let i = 0; i < s.shadowGradientSteps + 1; i++) {
-                let t = i / s.shadowGradientSteps;
-                let color = lerpHSL(t, s.shadowColor, s.shadowEndColor)
-                let x_off = lerp_number(t, 0, s.shadowOffsetX)
-                let y_off = lerp_number(t, 0, s.shadowOffsetY)
-                let blur = lerp_number(t, 0, s.shadowBlurRadius)
-                let tf = ` ${x_off}px ${y_off}px ${blur}px ${objToHsla(color)}`
+                const t = i / s.shadowGradientSteps;
+                const color = lerpHSL(t, s.shadowColor, s.shadowEndColor)
+                const x_off = lerp_number(t, 0, s.shadowOffsetX)
+                const y_off = lerp_number(t, 0, s.shadowOffsetY)
+                const blur = lerp_number(t, 0, s.shadowBlurRadius)
+                const tf = ` ${x_off}px ${y_off}px ${blur}px ${objToHsla(color)}`
                 shadows.push(tf)
             }
         } else {
@@ -212,4 +212,11 @@ export const default_style: Style = {
         l: 0.5,
         a: 1.0,
     },
+}
+
+/** How many text-shadow layers generateCSSStyle() emits for a style. */
+export function countShadowLayers(s: Style): number {
+    let n = s.strokeEnabled ? 8 : 0
+    if (s.shadowEnabled) n += s.shadowGradientEnabled ? s.shadowGradientSteps + 1 : 1
+    return n
 }

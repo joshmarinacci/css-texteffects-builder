@@ -1,130 +1,75 @@
-.vbox {
-  display: flex;
-  flex-direction: column;
+/* App-specific additions on top of tooltheme. tooltheme lives in
+   @layer tooltheme, so these unlayered rules win without specificity fights. */
+
+/* Inspector rows: room for labels like "Background" and "End color". */
+/* Checkbox/switch rows keep tooltheme's own two-column layout. */
+aside label:not(:has(> input[type='checkbox'])) {
+  grid-template-columns: 10ch minmax(0, 1fr) auto;
 }
 
-button.preset {
-  white-space: nowrap;
+/* Workaround for tooltheme 0.1.1: its checkbox-row rule out-specifies the
+   switch-row rule, so switches render toggle-first. Remove once fixed upstream. */
+aside label:has(> input[role='switch']) {
+  grid-template-columns: 1fr auto;
+}
+aside label > input[role='switch'] {
+  order: 1;
+}
+
+.presets {
+  margin-block: var(--s1) var(--s3);
+}
+.presets button {
   text-transform: capitalize;
-  padding: 0.5rem;
-  background-color: #ffffff;
-  margin: 0.25rem;
-  border: 1px solid black;
-}
-button.preset:hover {
-  background-color: #b9fda9;
 }
 
-.style-output-wrapper {
-  border: 1px solid black;
-  background-color: white;
-  padding: 1rem;
-  box-sizing: border-box;
-  /*width: fit-content;*/
-  width: 100%;
-  overflow: scroll;
+/* Color field: swatch + hsla() value in one toggle button. */
+.color-button {
+  justify-content: flex-start;
+  gap: var(--s2);
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+.color-button .swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.color-picker {
+  margin-block: var(--s1) var(--s2);
 }
 
-.style-output-wrapper span {
+/* Preview card: the effect draws its own background edge to edge. */
+main > section {
+  max-width: 960px;
+}
+main > section.preview {
+  padding: 0;
+  overflow: auto;
+}
+.style-output-wrapper > span {
   display: block;
-  padding: 150px;
+  width: max-content;
+  min-width: 100%;
+  padding: 96px;
+  text-align: center;
 }
 
-
-.auto-form {
-  border: 1px solid #817e7e;
-  padding: 1rem;
-  background-color: #e7e7e7;
-  border-radius: 1rem;
-  margin: 1rem;
-  width: fit-content;
-  font-family: -apple-system, system-ui, sans-serif;
-  font-size: 11pt;
-}
-
-.auto-form .hbox {
-  padding: 0.25rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.auto-form .hbox label {
-  padding-right: 1rem;
-}
-
-
-.text {
-  font-size: 96pt;
-  background-color: black;
-  /* gradient of white to green, but with shadow at every 5px to the max blur radius */
-  text-shadow: 0 0 5px #fff,
-    0 0 10px #fff,
-    0 0 15px #fff,
-    0 0 20px #49ff18,
-    0 0 30px #49ff18,
-    0 0 40px #49ff18,
-    0 0 55px #49ff18,
-    0 0 75px #49ff18;
-}
-
-
-.main {
-  display: flex;
-  flex-direction: row;
-}
-
-.color-swatch-button label {
-  margin-left: 1rem;
-}
-.color-swatch-button button {
-  border: 2px solid white;
-  box-shadow: 0px 0px 0px 2px black;
-  width: 24px;
-  height: 24px;
-}
-
-
-.css-export-view {
+.export-text {
   width: 100%;
-  margin:0;
-  box-sizing: border-box;
+  font-family: var(--font-num);
 }
 
-
-.png-export-view {
-  border: 1px solid blue;
-  display: flex;
-  flex-direction: column;
-  width: 600px;
-}
-
-
-
-.color-picker-wrapper {
-  /*border: 1px solid red;*/
-}
-.color-picker-wrapper .popover {
-  border: 0px solid black;
-  position: absolute;
-}
-.color-picker-wrapper .cover {
-  border: 0px solid blue;
-}
-
-
-.hsl-picker {
-  border: 5px solid black;
-  position: relative;
-  width: 300px;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-}
-.hsl-picker .hue-wrapper, .hsl-picker .alpha-wrapper, .sat-wrapper {
-  border: 1px solid green;
-  position: relative;
-  width: 300px;
-  height: 30px;
+.png-export-view canvas {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 5 / 2;
+  margin-block: var(--s2);
+  border: 1px solid var(--border);
 }
