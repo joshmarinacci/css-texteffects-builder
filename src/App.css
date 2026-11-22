@@ -1,19 +1,10 @@
 /* App-specific additions on top of tooltheme. tooltheme lives in
    @layer tooltheme, so these unlayered rules win without specificity fights. */
 
-/* Inspector rows: room for labels like "Background" and "End color". */
-/* Checkbox/switch rows keep tooltheme's own two-column layout. */
+/* Inspector rows: room for labels like "Background" and "End color".
+   Checkbox and switch rows keep tooltheme's own two-column layout. */
 aside label:not(:has(> input[type='checkbox'])) {
   grid-template-columns: 10ch minmax(0, 1fr) auto;
-}
-
-/* Workaround for tooltheme 0.1.1: its checkbox-row rule out-specifies the
-   switch-row rule, so switches render toggle-first. Remove once fixed upstream. */
-aside label:has(> input[role='switch']) {
-  grid-template-columns: 1fr auto;
-}
-aside label > input[role='switch'] {
-  order: 1;
 }
 
 .presets {
